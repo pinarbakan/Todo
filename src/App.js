@@ -38,13 +38,8 @@ class App extends Component {
         super(props);
         this.state = {
             todos   : [],
-            data    : '',           
-            checked : [],
+            data    : ''
         };
-
-        this._handleOnChange= this._handleOnChange.bind(this);
-        //this._handleEnter= this._handleEnter.bind(this);
-        //this._handleSubmit= this._handleSubmit.bind(this);
     }
 
     componentDidUpdate() {
@@ -52,49 +47,48 @@ class App extends Component {
     }   
 
     render() {
-      const {classes}=this.props;
+      const { classes } = this.props;
 
       return (
-        <div className= {classes.root}>
-          <form onSubmit={this._handleSubmit.bind(this)} >
-            <label className={classes.label}> S4B todos </label>
-            <input className={classes.input}
-                onChange= {this._handleOnChange} 
-                value={this.state.data}
-            />
-          </form>
+        <div className= { classes.root }>
+            <form onSubmit={ this._handleSubmit.bind(this) } >
+                <label className={ classes.label }> S4B todos </label>
+                <input className={ classes.input }
+                    onChange={ this._handleOnChange.bind(this) } 
+                    value={ this.state.data }
+                />
+            </form>
           
             <List className={classes.list}>
-                {this.state.todos.map(value => {
-                    
-                return (
-                    <div>
+                {this.state.todos.map(todo => {
+                    return (
                         <div>
-                            <ListItem
-                                key     
-                                onClick ={ this.handleToggle(this, value.id) }
-                            >
-                                <Checkbox
-                                    checked={this.state.checked.indexOf(value) !== -1}
-                                    tabIndex={-1}
-                                    disableRipple
-                                    color= "default"
+                            <div>
+                                <ListItem
+                                    key={ todo.id } 
+                                    onClick={ this._handleToggle.bind(this, todo.id) }
+                                >
+                                    <Checkbox
+                                        checked={ todo.checked }
+                                        color= "default"
                                     />
-                                <ListItemText primary={ value.name } />
-                            </ListItem>
+                                    <ListItemText primary={ todo.name } />
+                                </ListItem>
+                            </div>
+                            <div>
+                                <button 
+                                    onClick={ this._handleDelete.bind(this, todo.id) }
+                                    color="default"> DELETE
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <button onClick={this._handleDelete.bind(this, value.id)} color="default"> DELETE </button>
-                        </div>
-                    </div>);
-            })}
-        </List>
-        </div>
-      );
-      }
+                    );
+                })}
+            </List>
+        </div>);
+    }
 
     _handleOnChange = (event) => {
-        
         this.setState({
             data : event.target.value,           
         });
@@ -102,58 +96,54 @@ class App extends Component {
 
     _handleSubmit (event) {
         event.preventDefault();
-        const newItem=this.state.data;
+
+        const newItem = this.state.data;
         
-        if(newItem !== ''){
+        if(newItem){
             this.setState({
-                todos: [...this.state.todos, {id:this._createRandomKeyValue(), name: newItem }],
-                data : '',
-                
+                todos: [...this.state.todos,
+                        {
+                            id: this._createRandomKeyValue(),
+                            name: newItem,
+                            checked: false
+                        }
+                    ],
+                data : ''
             });
         }        
     }
 
-    handleToggle = value => () => {
-        const { checked } = this.state;
-        const currentIndex = checked.indexOf(value);
-        const newChecked = [...checked];
-    
-        if (currentIndex === -1) {
-          newChecked.push(value);
-        } else {
-          newChecked.splice(currentIndex, 1);
-        }
-    
+    _handleToggle(todoId) {
+        const { todos } = this.state;
+        const selectedTodo = todos.find(todo => todo.id === todoId);
+        const filteredTodos = todos.filter(todo => todo.id !== todoId);
+
+        let orderedTodos = [
+            ...filteredTodos,
+            {
+                id: selectedTodo.id,
+                name: selectedTodo.name,
+                checked: !selectedTodo.checked
+            }
+        ].sort((todo1, todo2) => (todo1.id > todo2.id) ? 1 : ((todo2.id> todo1.id) ? -1 : 0));
         this.setState({
-          checked: newChecked
+            todos: [...orderedTodos]
         });
     };
-    
-    _handleDelete(event){
-       
-        }
-        
-    
+   
+    _handleDelete(todoId) {
+        // verilen id dışında kalan diğer tümü
+        const newTodos = this.state.todos.filter(todo => todo.id !== todoId);
+
+        this.setState({
+            todos: [...newTodos]
+        });
+    }    
 
     _createRandomKeyValue() {
-       // const capitalLetters    = [ "A", "B", "C", "D", "E", "F", "G", "H","I", "J", "K", "L", "M", "N", "O", "P","Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" ];
-       // const smallLetters      = [ "a", "b", "c", "d", "e", "f", "g", "h","i", "j", "l", "l", "m", "n", "o", "p","q", "r", "s", "t", "u", "v", "w", "x", "y", "z" ];
-       //  const digits            = [ "0", "1", "2", "3", "4", "5", "6", "7","8", "9"];
-
-       // var random= Math.random();
-       // key= capitalLetters.random[];
-        
-
-        // TODO
-        // return a random string
-
-        return Math.floor(Date.now() / 1000);
-    }  
+        return Date.now();
+    }
 } 
 
- /*App.propTypes = {
-    todos: PropTypes.array.isRequired
-  };
-  */
   
   export default withStyles(styles)(App);
